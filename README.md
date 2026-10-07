@@ -1,16 +1,24 @@
-# React + Vite
+# DevBlog - Responsive Blog Platform (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Built as part of **Module 1: Frontend Development** for the **Codomax Internship Program**.
 
-Currently, two official plugins are available:
+## 🚀 Overview
+A modern, component-driven blog application interface developed using React, Vite, and Tailwind CSS. The interface is optimized for performance and fully responsive across mobile, tablet, and desktop viewports.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📄 Pages Implemented
+- **Home:** Featured hero section, category-based filtering, and dynamic article cards.
+- **Login:** Clean authentication entry form with structured validation states.
+- **Register:** New user registration interface with controlled form inputs.
+- **Dashboard:** Author overview highlighting metrics (views, reactions) and published blog controls.
+- **Create Blog:** Multi-input article composer for publishing new tech stories.
 
-## React Compiler
+## 🛠️ Tech Stack
+- **Library:** React 19 / Vite
+- **Styling:** Tailwind CSS
+- **Routing:** React Router v6
+- **Icons:** Lucide React
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 💻 Local Setup
+1. Clone the repository:
+   ```bash
+   git clone [https://github.com/Sandeha10/codomax-blog-app.git](https://github.com/Sandeha10/codomax-blog-app.git)

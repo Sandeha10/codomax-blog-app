@@ -10,11 +10,30 @@ export default function CreateBlog() {
     coverImage: '',
     content: ''
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Blog drafted successfully!');
-    navigate('/dashboard');
+    setLoading(true);
+
+    try {
+      const res = await fetch('http://localhost:5000/api/blogs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(blogData),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to create blog');
+      }
+
+      alert('Blog is Sucessfuly  Published !');
+      navigate('/');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -88,10 +107,11 @@ export default function CreateBlog() {
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition"
+              disabled={loading}
+              className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
-              Publish Article
+              {loading ? 'Publishing...' : 'Publish Article'}
             </button>
           </div>
         </form>

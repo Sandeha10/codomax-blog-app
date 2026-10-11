@@ -1,48 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, User, ArrowRight, Tag } from 'lucide-react';
-
-const mockBlogs = [
-  {
-    id: 1,
-    title: 'Building Modern Full-Stack Web Apps with MERN',
-    excerpt: 'Explore best practices for designing scalable REST APIs and responsive React user interfaces.',
-    category: 'Development',
-    author: 'Sandeha W.',
-    date: 'Oct 07, 2026',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 2,
-    title: 'Mastering Tailwind CSS v4 in Modern Frontend Pipelines',
-    excerpt: 'A comprehensive guide to leveraging the new performance upgrades in modern utility-first CSS.',
-    category: 'Design & CSS',
-    author: 'Codomax Intern',
-    date: 'Oct 05, 2026',
-    image: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 3,
-    title: 'Database Architecture Essentials: SQL vs NoSQL',
-    excerpt: 'Key strategies for structuring document-oriented collections and optimizing query lookups.',
-    category: 'Backend',
-    author: 'Tech Lead',
-    date: 'Sep 29, 2026',
-    image: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=800&q=80',
-  },
-];
+import { Calendar, User, Tag } from 'lucide-react';
 
 export default function Home() {
+  const [blogs, setBlogs] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const categories = ['All', 'Development', 'Design & CSS', 'Backend'];
+  const [loading, setLoading] = useState(true);
+  const categories = ['All', 'Development', 'Design & CSS', 'Backend', 'Cloud & DevOps'];
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/blogs')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setBlogs(data.blogs);
+        }
+      })
+      .catch((err) => console.error('Fetch error:', err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filteredBlogs = selectedCategory === 'All'
-    ? mockBlogs
-    : mockBlogs.filter(b => b.category === selectedCategory);
+    ? blogs
+    : blogs.filter(b => b.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
-      {/* Hero Section */}
       <section className="bg-white border-b border-gray-100 py-16 text-center px-4">
         <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight">
           Read, Write & Share <span className="text-indigo-600">Developer Stories</span>
@@ -60,7 +43,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Category Pills */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
         <div className="flex gap-2 overflow-x-auto pb-4">
           {categories.map((cat) => (
@@ -78,34 +60,37 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Blog Cards Grid */}
-        <div className="mt-6 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {filteredBlogs.map((blog) => (
-            <div key={blog.id} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <img src={blog.image} alt={blog.title} className="w-full h-48 object-cover" />
-              <div className="p-6">
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-md">
-                  <Tag className="w-3 h-3" />
-                  {blog.category}
-                </span>
-                <h2 className="mt-3 text-xl font-bold text-gray-900 line-clamp-1 hover:text-indigo-600 cursor-pointer">
-                  {blog.title}
-                </h2>
-                <p className="mt-2 text-sm text-gray-600 line-clamp-2">{blog.excerpt}</p>
-                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <User className="w-3.5 h-3.5" />
-                    <span>{blog.author}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{blog.date}</span>
+        {loading ? (
+          <div className="text-center py-12 text-gray-500">Loading blogs from backend server...</div>
+        ) : (
+          <div className="mt-6 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {filteredBlogs.map((blog) => (
+              <div key={blog.id} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <img src={blog.image} alt={blog.title} className="w-full h-48 object-cover" />
+                <div className="p-6">
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-md">
+                    <Tag className="w-3 h-3" />
+                    {blog.category}
+                  </span>
+                  <h2 className="mt-3 text-xl font-bold text-gray-900 line-clamp-1 hover:text-indigo-600 cursor-pointer">
+                    {blog.title}
+                  </h2>
+                  <p className="mt-2 text-sm text-gray-600 line-clamp-2">{blog.excerpt}</p>
+                  <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <User className="w-3.5 h-3.5" />
+                      <span>{blog.author}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{blog.date}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

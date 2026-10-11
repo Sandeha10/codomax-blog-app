@@ -1,13 +1,37 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Lock, Mail, User } from 'lucide-react';
 
 export default function Register() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('User registration submitted!');
+    setError('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      alert('Registration Succsefull ! Now  Login .');
+      navigate('/login');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -15,6 +39,12 @@ export default function Register() {
       <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-sm border border-gray-100">
         <h2 className="text-2xl font-bold text-gray-900 text-center">Create an Account</h2>
         <p className="mt-2 text-sm text-gray-600 text-center">Join our network of developer writers</p>
+
+        {error && (
+          <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-200">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
@@ -61,9 +91,10 @@ export default function Register() {
           </div>
           <button
             type="submit"
-            className="w-full py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition"
+            disabled={loading}
+            className="w-full py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition disabled:opacity-50"
           >
-            Create Account
+            {loading ? 'Registering...' : 'Create Account'}
           </button>
         </form>
 

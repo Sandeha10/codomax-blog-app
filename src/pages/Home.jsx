@@ -65,29 +65,29 @@ export default function Home() {
         ) : (
           <div className="mt-6 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {filteredBlogs.map((blog) => (
-              <div key={blog.id} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <img src={blog.image} alt={blog.title} className="w-full h-48 object-cover" />
-                <div className="p-6">
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-md">
-                    <Tag className="w-3 h-3" />
-                    {blog.category}
-                  </span>
-                  <h2 className="mt-3 text-xl font-bold text-gray-900 line-clamp-1 hover:text-indigo-600 cursor-pointer">
-                    {blog.title}
-                  </h2>
-                  <p className="mt-2 text-sm text-gray-600 line-clamp-2">{blog.excerpt}</p>
-                  <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <User className="w-3.5 h-3.5" />
-                      <span>{blog.author}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{blog.date}</span>
+                <div key={blog._id} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <img src={blog.image} alt={blog.title} className="w-full h-48 object-cover" />
+                  <div className="p-6">
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-md">
+                      <Tag className="w-3 h-3" />
+                      {blog.category}
+                    </span>
+                    <h2 className="mt-3 text-xl font-bold text-gray-900 line-clamp-1 hover:text-indigo-600 cursor-pointer">
+                      <Link to={`/blog/${blog._id}`}>{blog.title}</Link>
+                    </h2>
+                    <p className="mt-2 text-sm text-gray-600 line-clamp-2">{blog.excerpt}</p>
+                    <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <User className="w-3.5 h-3.5" />
+                        <span>{blog.author}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>{new Date(blog.createdAt || Date.now()).toLocaleDateString()}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
             ))}
           </div>
         )}

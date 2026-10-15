@@ -120,6 +120,47 @@ app.post('/api/blogs', async (req, res) => {
   }
 });
 
+    // --- 6. Update Blog (PUT) ---
+    app.put('/api/blogs/:id', async (req, res) => {
+      try {
+        const { title, category, coverImage, content } = req.body;
+        const updatedBlog = await Blog.findByIdAndUpdate(
+          req.params.id,
+          {
+            title,
+            category,
+            image: coverImage,
+            content,
+            excerpt: content ? content.slice(0, 120) + '...' : undefined,
+          },
+          { new: true }
+        );
+
+        if (!updatedBlog) {
+          return res.status(404).json({ success: false, message: 'Blog not found' });
+        }
+
+        res.json({ success: true, message: 'Blog updated successfully!', blog: updatedBlog });
+      } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+      }
+    });
+
+    // --- 7. Delete Blog (DELETE) ---
+    app.delete('/api/blogs/:id', async (req, res) => {
+      try {
+        const deletedBlog = await Blog.findByIdAndDelete(req.params.id);
+        if (!deletedBlog) {
+          return res.status(404).json({ success: false, message: 'Blog not found' });
+        }
+        res.json({ success: true, message: 'Blog deleted successfully!' });
+      } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+      }
+    });
+
+
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

@@ -1,12 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PenSquare, Trash2, Eye, Heart, Plus } from 'lucide-react';
+import { PenSquare, Trash2, Plus, Calendar, Tag } from 'lucide-react';
 
 export default function Dashboard() {
-  const userBlogs = [
-    { id: 1, title: 'Building Modern Full-Stack Web Apps with MERN', date: 'Oct 07, 2026', views: 320, likes: 24 },
-    { id: 2, title: 'Mastering Tailwind CSS v4 in Modern Frontend Pipelines', date: 'Oct 05, 2026', views: 185, likes: 12 },
-  ];
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchBlogs = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/blogs');
+      const data = await res.json();
+      if (data.success) {
+        setBlogs(data.blogs);
+      }
+    } catch (err) {
+      console.error('Error fetching blogs:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this article?')) {
+      try {
+        const res = await fetch(`http://localhost:5000/api/blogs/${id}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Article deleted successfully!');
+          setBlogs(blogs.filter((b) => b._id !== id));
+        } else {
+          alert(data.message || 'Failed to delete');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Server error while deleting article');
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -14,7 +50,7 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-gray-200 gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Author Dashboard</h1>
-            <p className="text-sm text-gray-600 mt-1">Manage your published articles and view analytics</p>
+            <p className="text-sm text-gray-600 mt-1">Manage, update, and remove your published blogs</p>
           </div>
           <Link
             to="/create"
@@ -25,49 +61,60 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 my-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 my-8">
           <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Posts</span>
-            <p className="text-3xl font-extrabold text-gray-900 mt-2">2</p>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Articles</span>
+            <p className="text-3xl font-extrabold text-gray-900 mt-2">{blogs.length}</p>
           </div>
           <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Readers</span>
-            <p className="text-3xl font-extrabold text-indigo-600 mt-2">505</p>
-          </div>
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Reactions</span>
-            <p className="text-3xl font-extrabold text-emerald-600 mt-2">36</p>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Database Status</span>
+            <p className="text-3xl font-extrabold text-emerald-600 mt-2">MongoDB Active</p>
           </div>
         </div>
 
-        {/* Table of Blogs */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-900 text-sm">Your Articles</h3>
+            <h3 className="font-semibold text-gray-900 text-sm">Your Articles (CRUD Management)</h3>
           </div>
-          <div className="divide-y divide-gray-100">
-            {userBlogs.map((blog) => (
-              <div key={blog.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-gray-50 transition">
-                <div>
-                  <h4 className="font-bold text-gray-900 text-base">{blog.title}</h4>
-                  <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
-                    <span>Published on {blog.date}</span>
-                    <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> {blog.views}</span>
-                    <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5" /> {blog.likes}</span>
+          {loading ? (
+            <div className="p-8 text-center text-gray-500">Loading articles from MongoDB...</div>
+          ) : blogs.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">No blogs found. Create your first post!</div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {blogs.map((blog) => (
+                <div key={blog._id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-gray-50 transition">
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-base">{blog.title}</h4>
+                    <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {new Date(blog.createdAt || Date.now()).toLocaleDateString()}
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs font-medium">
+                        <Tag className="w-3 h-3" />
+                        {blog.category}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      to={`/edit/${blog._id}`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-200 rounded-md hover:bg-gray-100 transition"
+                    >
+                      <PenSquare className="w-3.5 h-3.5" /> Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(blog._id)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <button className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-200 rounded-md hover:bg-gray-100">
-                    <PenSquare className="w-3.5 h-3.5" /> Edit
-                  </button>
-                  <button className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-md hover:bg-red-50">
-                    <Trash2 className="w-3.5 h-3.5" /> Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

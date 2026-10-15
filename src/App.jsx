@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateBlog from './pages/CreateBlog';
 import BlogDetails from './pages/BlogDetails';
+import EditBlog from './pages/EditBlog';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/create" element={<CreateBlog />} />
             <Route path="/blog/:id" element={<BlogDetails />} />
+            <Route path="/edit/:id" element={<EditBlog />} />
           </Routes>
         </main>
         <Footer />

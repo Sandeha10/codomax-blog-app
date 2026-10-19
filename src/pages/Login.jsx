@@ -25,8 +25,10 @@ export default function Login() {
         throw new Error(data.message || 'Login failed');
       }
 
+      localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      alert('Login Sucessful !');
+
+      alert('Login Sucessfull!');
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

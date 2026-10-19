@@ -17,11 +17,15 @@ export default function CreateBlog() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/blogs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(blogData),
-      });
+      const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:5000/api/blogs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(blogData),
+        });
 
       if (!res.ok) {
         throw new Error('Failed to create blog');

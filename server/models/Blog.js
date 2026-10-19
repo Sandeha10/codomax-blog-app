@@ -4,7 +4,8 @@ const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
   excerpt: { type: String },
   category: { type: String, default: 'General' },
-  author: { type: String, default: 'Sandeha W.' },
+  author: { type: String, default: 'Developer' },
+  authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   image: { type: String },
   content: { type: String, required: true },
 }, { timestamps: true });

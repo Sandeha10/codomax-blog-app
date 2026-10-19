@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import CreateBlog from './pages/CreateBlog';
 import BlogDetails from './pages/BlogDetails';
 import EditBlog from './pages/EditBlog';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
   return (
@@ -20,10 +21,33 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/create" element={<CreateBlog />} />
             <Route path="/blog/:id" element={<BlogDetails />} />
-            <Route path="/edit/:id" element={<EditBlog />} />
+
+            {/* Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create"
+              element={
+                <ProtectedRoute>
+                  <CreateBlog />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <EditBlog />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </main>
         <Footer />

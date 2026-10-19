@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import User from './models/User.js';
 import Blog from './models/Blog.js';
 
@@ -10,9 +11,9 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/codomax-blog';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/codomax-blog';
+const JWT_SECRET = process.env.JWT_SECRET || 'codomax_secret_key_2026';
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -21,7 +22,23 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB Connected Successfully!'))
   .catch((err) => console.error('MongoDB Connection Error:', err));
 
-// --- 1. User Registration (Password Hashed) ---
+// --- JWT Auth Middleware ---
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'Access Denied: No Token Provided' });
+  }
+
+  try {
+    const verified = jwt.verify(token, JWT_SECRET);
+    req.user = verified;
+    next();
+  } catch (error) {
+    res.status(403).json({ success: false, message: 'Invalid or Expired Token' });
+  }
+};
+
+// --- 1. Register with JWT ---
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -36,12 +53,14 @@ app.post('/api/auth/register', async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
     const newUser = await User.create({ name, email, password: hashedPassword });
+
+    const token = jwt.sign({ id: newUser._id, name: newUser.name, email: newUser.email }, JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
       success: true,
       message: 'User registered successfully!',
+      token,
       user: { id: newUser._id, name: newUser.name, email: newUser.email }
     });
   } catch (error) {
@@ -49,7 +68,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// --- 2. User Login ---
+// --- 2. Login with JWT ---
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -64,9 +83,12 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials.' });
     }
 
+    const token = jwt.sign({ id: user._id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+
     res.json({
       success: true,
       message: 'Login successful!',
+      token,
       user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (error) {
@@ -74,7 +96,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// --- 3. Get All Blogs ---
+// --- 3. Get All Public Blogs ---
 app.get('/api/blogs', async (req, res) => {
   try {
     const blogs = await Blog.find().sort({ createdAt: -1 });
@@ -84,23 +106,31 @@ app.get('/api/blogs', async (req, res) => {
   }
 });
 
-// --- 4. Get Single Blog by ID (Module 3 Requirement) ---
+// --- 4. Get Logged-In User's Blogs (Protected) ---
+app.get('/api/blogs/user/me', verifyToken, async (req, res) => {
+  try {
+    const userBlogs = await Blog.find({ authorId: req.user.id }).sort({ createdAt: -1 });
+    res.json({ success: true, blogs: userBlogs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// --- 5. Get Single Blog by ID ---
 app.get('/api/blogs/:id', async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id);
-    if (!blog) {
-      return res.status(404).json({ success: false, message: 'Blog not found' });
-    }
+    if (!blog) return res.status(404).json({ success: false, message: 'Blog not found' });
     res.json({ success: true, blog });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Invalid Blog ID' });
   }
 });
 
-// --- 5. Create Blog ---
-app.post('/api/blogs', async (req, res) => {
+// --- 6. Create Blog (Protected) ---
+app.post('/api/blogs', verifyToken, async (req, res) => {
   try {
-    const { title, category, coverImage, content, author } = req.body;
+    const { title, category, coverImage, content } = req.body;
     if (!title || !content) {
       return res.status(400).json({ success: false, message: 'Title and content are required.' });
     }
@@ -109,7 +139,8 @@ app.post('/api/blogs', async (req, res) => {
       title,
       excerpt: content.slice(0, 120) + '...',
       category: category || 'General',
-      author: author || 'Developer',
+      author: req.user.name,
+      authorId: req.user.id,
       image: coverImage || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80',
       content
     });
@@ -120,46 +151,47 @@ app.post('/api/blogs', async (req, res) => {
   }
 });
 
-    // --- 6. Update Blog (PUT) ---
-    app.put('/api/blogs/:id', async (req, res) => {
-      try {
-        const { title, category, coverImage, content } = req.body;
-        const updatedBlog = await Blog.findByIdAndUpdate(
-          req.params.id,
-          {
-            title,
-            category,
-            image: coverImage,
-            content,
-            excerpt: content ? content.slice(0, 120) + '...' : undefined,
-          },
-          { new: true }
-        );
+// --- 7. Update Blog (Protected) ---
+app.put('/api/blogs/:id', verifyToken, async (req, res) => {
+  try {
+    const { title, category, coverImage, content } = req.body;
+    const blog = await Blog.findById(req.params.id);
 
-        if (!updatedBlog) {
-          return res.status(404).json({ success: false, message: 'Blog not found' });
-        }
+    if (!blog) return res.status(404).json({ success: false, message: 'Blog not found' });
+    if (blog.authorId && blog.authorId.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Unauthorized to edit this post' });
+    }
 
-        res.json({ success: true, message: 'Blog updated successfully!', blog: updatedBlog });
-      } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-      }
-    });
+    blog.title = title || blog.title;
+    blog.category = category || blog.category;
+    if (coverImage) blog.image = coverImage;
+    if (content) {
+      blog.content = content;
+      blog.excerpt = content.slice(0, 120) + '...';
+    }
 
-    // --- 7. Delete Blog (DELETE) ---
-    app.delete('/api/blogs/:id', async (req, res) => {
-      try {
-        const deletedBlog = await Blog.findByIdAndDelete(req.params.id);
-        if (!deletedBlog) {
-          return res.status(404).json({ success: false, message: 'Blog not found' });
-        }
-        res.json({ success: true, message: 'Blog deleted successfully!' });
-      } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-      }
-    });
+    await blog.save();
+    res.json({ success: true, message: 'Blog updated successfully!', blog });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
+// --- 8. Delete Blog (Protected) ---
+app.delete('/api/blogs/:id', verifyToken, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ success: false, message: 'Blog not found' });
+    if (blog.authorId && blog.authorId.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Unauthorized to delete this post' });
+    }
 
+    await Blog.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Blog deleted successfully!' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

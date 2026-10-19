@@ -1,17 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PenSquare, Trash2, Plus, Calendar, Tag } from 'lucide-react';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchBlogs = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/blogs');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const res = await fetch('http://localhost:5000/api/blogs/user/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
       const data = await res.json();
       if (data.success) {
         setBlogs(data.blogs);
+      } else {
+        console.error(data.message);
       }
     } catch (err) {
       console.error('Error fetching blogs:', err);
@@ -27,9 +41,14 @@ export default function Dashboard() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this article?')) {
       try {
+        const token = localStorage.getItem('token');
         const res = await fetch(`http://localhost:5000/api/blogs/${id}`, {
           method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
+
         const data = await res.json();
         if (data.success) {
           alert('Article deleted successfully!');
@@ -63,7 +82,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 my-8">
           <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Articles</span>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Your Articles</span>
             <p className="text-3xl font-extrabold text-gray-900 mt-2">{blogs.length}</p>
           </div>
           <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
@@ -74,12 +93,12 @@ export default function Dashboard() {
 
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-900 text-sm">Your Articles (CRUD Management)</h3>
+            <h3 className="font-semibold text-gray-900 text-sm">Your Articles (Personal Feed)</h3>
           </div>
           {loading ? (
             <div className="p-8 text-center text-gray-500">Loading articles from MongoDB...</div>
           ) : blogs.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">No blogs found. Create your first post!</div>
+            <div className="p-8 text-center text-gray-500">You haven't published any articles yet. Create your first post!</div>
           ) : (
             <div className="divide-y divide-gray-100">
               {blogs.map((blog) => (

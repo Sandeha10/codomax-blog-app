@@ -14,13 +14,24 @@ const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/codomax-blog';
 const JWT_SECRET = process.env.JWT_SECRET || 'codomax_secret_key_2026';
 
-app.use(cors());
+// --- Production CORS Configuration ---
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // MongoDB Connection
 mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB Connected Successfully!'))
   .catch((err) => console.error('MongoDB Connection Error:', err));
+
+// Root Health Check Route
+app.get('/', (req, res) => {
+  res.send('DevBlog Backend API is running successfully!');
+});
 
 // --- JWT Auth Middleware ---
 const verifyToken = (req, res, next) => {

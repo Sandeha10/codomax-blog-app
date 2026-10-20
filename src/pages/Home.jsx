@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, User, Tag, Search } from 'lucide-react';
-
+import { API_BASE_URL } from '../config';
 export default function Home() {
   const [blogs, setBlogs] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -11,7 +11,7 @@ export default function Home() {
   const categories = ['All', 'Development', 'Design & CSS', 'Backend', 'Cloud & DevOps'];
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/blogs')
+        fetch(`${API_BASE_URL}/api/blogs`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {

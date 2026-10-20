@@ -1,24 +1,33 @@
-# DevBlog - Responsive Blog Platform (Frontend)
+# DevBlog - Full-Stack MERN Blogging Platform
 
-Built as part of **Module 1: Frontend Development** for the **Codomax Internship Program**.
+A modern, responsive, and full-featured developer publishing platform built with the MERN stack (MongoDB, Express, React, Node.js) as part of the **Codomax Digital Solutions** Full-Stack Web Development Internship.
 
-## 🚀 Overview
-A modern, component-driven blog application interface developed using React, Vite, and Tailwind CSS. The interface is optimized for performance and fully responsive across mobile, tablet, and desktop viewports.
+## 🚀 Live Demo
+- **Live Application:** [PASTE_YOUR_VERCEL_LINK_HERE]
+- **Backend API:** [PASTE_YOUR_RENDER_BACKEND_LINK_HERE]
 
-## 📄 Pages Implemented
-- **Home:** Featured hero section, category-based filtering, and dynamic article cards.
-- **Login:** Clean authentication entry form with structured validation states.
-- **Register:** New user registration interface with controlled form inputs.
-- **Dashboard:** Author overview highlighting metrics (views, reactions) and published blog controls.
-- **Create Blog:** Multi-input article composer for publishing new tech stories.
+## 🌟 Key Features
+- **Modern Responsive UI:** Built using React 18, Vite, and Tailwind CSS.
+- **RESTful Architecture:** Express.js and Node.js backend managing modular routing.
+- **Persistent Cloud Database:** Scalable NoSQL schema models engineered on MongoDB Atlas.
+- **Full CRUD Capabilities:** Authors can compose, read, update, and delete stories.
+- **Real-Time Client-Side Search:** Instant filtering across article titles and categorized tags.
+- **Robust Security:** Salted password hashing via `bcryptjs` and stateless session tracking with `jsonwebtoken` (JWT).
+- **Protected Routing:** Dedicated author dashboard and article composer restricted to authenticated sessions.
 
 ## 🛠️ Tech Stack
-- **Library:** React 19 / Vite
-- **Styling:** Tailwind CSS
-- **Routing:** React Router v6
-- **Icons:** Lucide React
+- **Frontend:** React, Tailwind CSS, Lucide React, React Router DOM, Vite
+- **Backend:** Node.js, Express.js, Mongoose, JSON Web Tokens (JWT), Bcrypt.js, CORS
+- **Database:** MongoDB Atlas
+- **Deployment:** Vercel (Client) & Render (API Server)
 
-## 💻 Local Setup
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/Sandeha10/codomax-blog-app.git](https://github.com/Sandeha10/codomax-blog-app.git)
+## 💻 Local Setup & Installation
+
+### Prerequisites
+- Node.js (v18+)
+- Local MongoDB or MongoDB Atlas URI
+
+### 1. Clone the repository
+```bash
+git clone [https://github.com/Sandeha10/codomax-blog-app.git](https://github.com/Sandeha10/codomax-blog-app.git)
+cd codomax-blog-app
